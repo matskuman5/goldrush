@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import WebSocket from 'ws';
-import { GameInstance, GameState } from './types';
-import { createGraph } from './astar';
+import { GameInstance, GameState, Position } from './types';
+import { aStar, createGraph, pathToDirections } from './astar';
 
 const playerToken = process.env.PLAYER_TOKEN || 'null';
 const levelId = process.env.LEVEL_ID || 'null';
@@ -15,6 +15,20 @@ const prettyPrintMaze = (maze: number[][]) => {
         .map(directionsToBoxDrawings)
         .join(' ')
     );
+  }
+};
+
+const prettyPrintSolution = (maze: number[][], solution: Position[]) => {
+  for (let i = 0; i < maze.length; i++) {
+    let row = '';
+    for (let j = 0; j < maze.length; j++) {
+      if (solution.some((p) => p.x === i && p.y === j)) {
+        row = row.concat('X ');
+      } else {
+        row = row.concat('  ');
+      }
+    }
+    console.log(row);
   }
 };
 
@@ -36,7 +50,17 @@ const runApp = async () => {
 
   console.log('Maze:');
   prettyPrintMaze(gameState.maze);
-  console.log(createGraph(gameState.maze));
+
+  const graph = createGraph(gameState.maze);
+  const solution = aStar(graph, gameState.start, gameState.target);
+
+  if (!solution) {
+    console.log('No solution found!');
+    return;
+  }
+
+  console.log('Solution:');
+  prettyPrintSolution(gameState.maze, solution);
 
   const ws = new WebSocket(`wss://goldrush.monad.fi/backend/${playerToken}/`);
 
