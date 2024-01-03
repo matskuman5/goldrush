@@ -147,3 +147,46 @@ export const pathToDirections = (path: Position[]) => {
 
   return directions;
 };
+
+export const optimizeDirections = (directions: string[]) => {
+  const optimizedDirections: string[] = [];
+
+  let i = 0;
+  while (i < directions.length - 1) {
+    const currentDirection = directions[i];
+    const nextDirection = directions[i + 1];
+    if (currentDirection === 'N' && nextDirection === 'E') {
+      optimizedDirections.push('NE');
+    } else if (currentDirection === 'E' && nextDirection === 'N') {
+      optimizedDirections.push('NE');
+    } else if (currentDirection === 'S' && nextDirection === 'E') {
+      optimizedDirections.push('SE');
+    } else if (currentDirection === 'E' && nextDirection === 'S') {
+      optimizedDirections.push('SE');
+    } else if (currentDirection === 'S' && nextDirection === 'W') {
+      optimizedDirections.push('SW');
+    } else if (currentDirection === 'W' && nextDirection === 'S') {
+      optimizedDirections.push('SW');
+    } else if (currentDirection === 'N' && nextDirection === 'W') {
+      optimizedDirections.push('NW');
+    } else if (currentDirection === 'W' && nextDirection === 'N') {
+      optimizedDirections.push('NW');
+    } else {
+      if (i === directions.length - 2) {
+        optimizedDirections.push(currentDirection);
+      }
+      optimizedDirections.push(currentDirection);
+      i++;
+      continue;
+    }
+    if (i === directions.length - 3) {
+      i++;
+    } else {
+      i += 2;
+    }
+  }
+
+  for (let i = 0; i < directions.length - 1; i += 2) {}
+
+  return optimizedDirections;
+};

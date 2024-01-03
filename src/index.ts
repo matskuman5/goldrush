@@ -2,7 +2,12 @@ import 'dotenv/config';
 import open from 'open';
 import WebSocket from 'ws';
 import { Position } from './types';
-import { aStar, createGraph, pathToDirections } from './astar';
+import {
+  aStar,
+  createGraph,
+  optimizeDirections,
+  pathToDirections,
+} from './astar';
 
 const playerToken = process.env.PLAYER_TOKEN || 'null';
 const levelId = process.env.LEVEL_ID || 'null';
@@ -72,7 +77,10 @@ const runApp = async () => {
   console.log('Solution:');
   prettyPrintSolution(gameState.maze, solution);
 
-  const moves = pathToDirections(solution);
+  const unoptimizedMoves = pathToDirections(solution);
+  console.log(unoptimizedMoves);
+
+  const moves = optimizeDirections(unoptimizedMoves);
   console.log(moves);
 
   const ws = new WebSocket(`wss://goldrush.monad.fi/backend/${playerToken}/`);
@@ -146,12 +154,20 @@ const directionToRotation = (direction: string) => {
   switch (direction) {
     case 'N':
       return 0;
+    case 'NE':
+      return 45;
     case 'E':
       return 90;
+    case 'SE':
+      return 135;
     case 'S':
       return 180;
+    case 'SW':
+      return 225;
     case 'W':
       return 270;
+    case 'NW':
+      return 315;
   }
 };
 
