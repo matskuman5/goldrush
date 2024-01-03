@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import WebSocket from 'ws';
 import { GameInstance, GameState } from './types';
+import { createGraph } from './astar';
 
 const playerToken = process.env.PLAYER_TOKEN || 'null';
 const levelId = process.env.LEVEL_ID || 'null';
@@ -35,6 +36,7 @@ const runApp = async () => {
 
   console.log('Maze:');
   prettyPrintMaze(gameState.maze);
+  console.log(createGraph(gameState.maze));
 
   const ws = new WebSocket(`wss://goldrush.monad.fi/backend/${playerToken}/`);
 
@@ -44,11 +46,11 @@ const runApp = async () => {
   });
 };
 
-const intToBinaryString = (n: number) => {
+export const intToBinaryString = (n: number) => {
   return n.toString(2).padStart(4, '0');
 };
 
-const openDirections = (bitString: string) => {
+export const openDirections = (bitString: string) => {
   const directions: string[] = [];
 
   if (bitString.charAt(0) === '0') {
