@@ -43,6 +43,7 @@ const openDirectionsToNeighbors = (
   return neighbors;
 };
 
+// A* search algorithm
 export const aStar = (graph: Node[], start: Position, goal: Position) => {
   const openSet: Position[] = [start];
   const cameFrom: { [key: string]: Position | null } = {};
@@ -148,6 +149,7 @@ export const pathToDirections = (path: Position[]) => {
   return directions;
 };
 
+// Reduces the amount of moves by combining moves to move diagonally when possible
 export const optimizeDirections = (directions: string[]) => {
   const optimizedDirections: string[] = [];
 
