@@ -52,38 +52,31 @@ export const aStar = (graph: Node[], start: Position, goal: Position) => {
   openSet.enqueue({ pos: start, cost: 0 });
 
   const cameFrom: { [key: string]: Position | null } = {};
-  const gScore: { [key: string]: number } = {};
-  const fScore: { [key: string]: number } = {};
 
-  // Initialize scores
-  graph.forEach((node) => {
-    const key = `${node.position.x},${node.position.y}`;
-    gScore[key] = Infinity;
-    fScore[key] = Infinity;
-  });
+  const costSoFar: { [key: string]: number } = {};
 
-  gScore[`${start.x},${start.y}`] = 0;
-  fScore[`${start.x},${start.y}`] = heuristic(start, goal);
+  costSoFar[`${start.x},${start.y}`] = 0;
 
-  while (!openSet.isEmpty) {
+  console.log(openSet.isEmpty());
+
+  while (!openSet.isEmpty()) {
     const current = openSet.pop();
+    console.log('At node: ', current);
     if (current.pos.x === goal.x && current.pos.y === goal.y) {
       return reconstructPath(cameFrom, current.pos);
     }
 
     const neighbors = getNeighbors(graph, current.pos);
     neighbors.forEach((neighbor) => {
-      const tentativeGScore = gScore[`${current.pos.x},${current.pos.y}`] + 1;
-      if (tentativeGScore < gScore[`${neighbor.x},${neighbor.y}`]) {
+      const newCost = costSoFar[`${current.pos.x},${current.pos.y}`] + 1;
+      if (
+        costSoFar[`${neighbor.x},${neighbor.y}`] === undefined ||
+        newCost < costSoFar[`${neighbor.x},${neighbor.y}`]
+      ) {
+        costSoFar[`${neighbor.x},${neighbor.y}`] = newCost;
+        const priority = newCost + heuristic(neighbor, goal);
+        openSet.enqueue({ pos: neighbor, cost: priority });
         cameFrom[`${neighbor.x},${neighbor.y}`] = current.pos;
-        gScore[`${neighbor.x},${neighbor.y}`] = tentativeGScore;
-        fScore[`${neighbor.x},${neighbor.y}`] =
-          gScore[`${neighbor.x},${neighbor.y}`] + heuristic(neighbor, goal);
-
-        openSet.push({
-          pos: neighbor,
-          cost: fScore[`${neighbor.x},${neighbor.y}`],
-        });
       }
     });
   }
