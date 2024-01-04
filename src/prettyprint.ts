@@ -1,4 +1,4 @@
-import { intToBinaryString, openDirections } from '.';
+import { intToBinaryString, openDirections } from './util';
 import { Position } from './types';
 
 export const prettyPrintMaze = (maze: number[][]) => {
