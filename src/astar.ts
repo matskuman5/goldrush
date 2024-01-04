@@ -1,5 +1,6 @@
 import { intToBinaryString, openDirections } from './util';
 import { Position } from './types';
+import { MinPriorityQueue } from '@datastructures-js/priority-queue';
 
 type Node = {
   position: Position;
@@ -45,7 +46,11 @@ const openDirectionsToNeighbors = (
 
 // A* search algorithm
 export const aStar = (graph: Node[], start: Position, goal: Position) => {
-  const openSet: Position[] = [start];
+  const openSet = new MinPriorityQueue<{ pos: Position; cost: number }>(
+    (point) => point.cost
+  );
+  openSet.enqueue({ pos: start, cost: 0 });
+
   const cameFrom: { [key: string]: Position | null } = {};
   const gScore: { [key: string]: number } = {};
   const fScore: { [key: string]: number } = {};
@@ -60,26 +65,25 @@ export const aStar = (graph: Node[], start: Position, goal: Position) => {
   gScore[`${start.x},${start.y}`] = 0;
   fScore[`${start.x},${start.y}`] = heuristic(start, goal);
 
-  while (openSet.length > 0) {
-    const current = getLowestFScoreNode(openSet, fScore);
-    if (current.x === goal.x && current.y === goal.y) {
-      return reconstructPath(cameFrom, current);
+  while (!openSet.isEmpty) {
+    const current = openSet.pop();
+    if (current.pos.x === goal.x && current.pos.y === goal.y) {
+      return reconstructPath(cameFrom, current.pos);
     }
 
-    openSet.splice(openSet.indexOf(current), 1);
-
-    const neighbors = getNeighbors(graph, current);
+    const neighbors = getNeighbors(graph, current.pos);
     neighbors.forEach((neighbor) => {
-      const tentativeGScore = gScore[`${current.x},${current.y}`] + 1;
+      const tentativeGScore = gScore[`${current.pos.x},${current.pos.y}`] + 1;
       if (tentativeGScore < gScore[`${neighbor.x},${neighbor.y}`]) {
-        cameFrom[`${neighbor.x},${neighbor.y}`] = current;
+        cameFrom[`${neighbor.x},${neighbor.y}`] = current.pos;
         gScore[`${neighbor.x},${neighbor.y}`] = tentativeGScore;
         fScore[`${neighbor.x},${neighbor.y}`] =
           gScore[`${neighbor.x},${neighbor.y}`] + heuristic(neighbor, goal);
 
-        if (!openSet.includes(neighbor)) {
-          openSet.push(neighbor);
-        }
+        openSet.push({
+          pos: neighbor,
+          cost: fScore[`${neighbor.x},${neighbor.y}`],
+        });
       }
     });
   }
@@ -91,23 +95,23 @@ const heuristic = (a: Position, b: Position) => {
   return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 };
 
-const getLowestFScoreNode = (
-  nodes: Position[],
-  fScore: { [key: string]: number }
-) => {
-  let lowestFScore = Infinity;
-  let lowestNode: Position | null = null;
+// const getLowestFScoreNode = (
+//   nodes: Position[],
+//   fScore: { [key: string]: number }
+// ) => {
+//   let lowestFScore = Infinity;
+//   let lowestNode: Position | null = null;
 
-  nodes.forEach((node) => {
-    const fScoreKey = `${node.x},${node.y}`;
-    if (fScore[fScoreKey] < lowestFScore) {
-      lowestFScore = fScore[fScoreKey];
-      lowestNode = node;
-    }
-  });
+//   nodes.forEach((node) => {
+//     const fScoreKey = `${node.x},${node.y}`;
+//     if (fScore[fScoreKey] < lowestFScore) {
+//       lowestFScore = fScore[fScoreKey];
+//       lowestNode = node;
+//     }
+//   });
 
-  return lowestNode!;
-};
+//   return lowestNode!;
+// };
 
 const getNeighbors = (graph: Node[], position: Position) => {
   const node = graph.find(
