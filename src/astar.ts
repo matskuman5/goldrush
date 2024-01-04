@@ -74,7 +74,7 @@ export const aStar = (graph: Node[], start: Position, goal: Position) => {
         newCost < costSoFar[`${neighbor.x},${neighbor.y}`]
       ) {
         costSoFar[`${neighbor.x},${neighbor.y}`] = newCost;
-        const priority = newCost + heuristic(neighbor, goal);
+        const priority = newCost + chebyshevHeuristic(neighbor, goal);
         openSet.enqueue({ pos: neighbor, cost: priority });
         cameFrom[`${neighbor.x},${neighbor.y}`] = current.pos;
       }
@@ -84,8 +84,9 @@ export const aStar = (graph: Node[], start: Position, goal: Position) => {
   return null; // No path found
 };
 
-const heuristic = (a: Position, b: Position) => {
-  return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+// Chebyshev distance is optimal for a heuristic function if we can move diagonally
+const chebyshevHeuristic = (a: Position, b: Position) => {
+  return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 };
 
 // const getLowestFScoreNode = (
