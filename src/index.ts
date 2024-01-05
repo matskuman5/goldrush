@@ -68,7 +68,6 @@ const runApp = async () => {
 
   ws.on('open', async () => {
     console.log('Websocket opened!');
-    ws.send(JSON.stringify(['sub-game', { id: game.entityId }]));
     open(`https://goldrush.monad.fi/?id=${game.entityId}`);
     await new Promise((resolve) => setTimeout(resolve, 3000)); // Give a bit of time to open the tab
     sendMoves(moves, game.entityId, ws);
