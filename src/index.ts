@@ -13,10 +13,7 @@ import { directionToRotation } from './util';
 const playerToken = process.env.PLAYER_TOKEN || 'null';
 const levelId = process.env.LEVEL_ID || 'null';
 
-const runApp = async () => {
-  console.log('Player token: ', playerToken);
-  console.log('Level ID: ', playerToken);
-
+const getGame = async () => {
   const headers = new Headers();
   headers.append('Authorization', playerToken);
 
@@ -26,6 +23,15 @@ const runApp = async () => {
   );
 
   const game = await response.json();
+
+  return game;
+};
+
+const runApp = async () => {
+  console.log('Player token: ', playerToken);
+  console.log('Level ID: ', playerToken);
+
+  const game = await getGame();
 
   const gameState = JSON.parse(game.gameState);
 
@@ -63,66 +69,67 @@ const runApp = async () => {
   ws.on('open', async () => {
     console.log('Websocket opened!');
     ws.send(JSON.stringify(['sub-game', { id: game.entityId }]));
-
     open(`https://goldrush.monad.fi/?id=${game.entityId}`);
-
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-
-    const firstMove = moves[0];
-    ws.send(
-      JSON.stringify([
-        'run-command',
-        {
-          gameId: game.entityId,
-          payload: {
-            action: 'rotate',
-            rotation: directionToRotation(firstMove),
-          },
-        },
-      ])
-    ); // First, turn to the correct direction
-
-    console.log('Sent first rotation: ', firstMove);
-
-    let previousMove = firstMove;
-
-    while (true) {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      const move = moves.shift();
-
-      if (!move) {
-        console.log('No more moves!');
-        break;
-      }
-
-      if (move === previousMove) {
-        console.log('Moving forward: ', move);
-        ws.send(
-          JSON.stringify([
-            'run-command',
-            { gameId: game.entityId, payload: { action: 'move' } },
-          ])
-        ); // If we are moving in the same direction as before, just move
-      } else {
-        console.log('Turning in direction: ', move);
-        ws.send(
-          JSON.stringify([
-            'run-command',
-            {
-              gameId: game.entityId,
-              payload: {
-                action: 'rotate',
-                rotation: directionToRotation(move),
-              },
-            },
-          ])
-        );
-        moves.unshift(move); // Otherwise, turn to the correct direction and add the move back to the queue
-      }
-      previousMove = move;
-    }
+    await new Promise((resolve) => setTimeout(resolve, 3000)); // Give a bit of time to open the tab
+    sendMoves(moves, game.entityId, ws);
   });
+};
+
+const sendMoves = async (moves: string[], gameId: string, ws: WebSocket) => {
+  const firstMove = moves[0];
+  ws.send(
+    JSON.stringify([
+      'run-command',
+      {
+        gameId: gameId,
+        payload: {
+          action: 'rotate',
+          rotation: directionToRotation(firstMove),
+        },
+      },
+    ])
+  ); // First, turn to the correct direction
+
+  console.log('Sent first rotation: ', firstMove);
+
+  let previousMove = firstMove;
+
+  while (true) {
+    await new Promise((resolve) => setTimeout(resolve, 100)); // 100 ms delay between moves to avoid rate limiting
+
+    const move = moves.shift();
+
+    if (!move) {
+      console.log('No more moves!');
+      break;
+    }
+
+    if (move === previousMove) {
+      console.log('Moving forward: ', move);
+      ws.send(
+        JSON.stringify([
+          'run-command',
+          { gameId: gameId, payload: { action: 'move' } },
+        ])
+      ); // If we are moving in the same direction as before, just move
+    } else {
+      console.log('Turning in direction: ', move);
+      ws.send(
+        JSON.stringify([
+          'run-command',
+          {
+            gameId: gameId,
+            payload: {
+              action: 'rotate',
+              rotation: directionToRotation(move),
+            },
+          },
+        ])
+      );
+      moves.unshift(move); // Otherwise, turn to the correct direction and add the move back to the queue
+    }
+    previousMove = move;
+  }
 };
 
 runApp();
