@@ -89,24 +89,6 @@ const chebyshevHeuristic = (a: Position, b: Position) => {
   return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 };
 
-// const getLowestFScoreNode = (
-//   nodes: Position[],
-//   fScore: { [key: string]: number }
-// ) => {
-//   let lowestFScore = Infinity;
-//   let lowestNode: Position | null = null;
-
-//   nodes.forEach((node) => {
-//     const fScoreKey = `${node.x},${node.y}`;
-//     if (fScore[fScoreKey] < lowestFScore) {
-//       lowestFScore = fScore[fScoreKey];
-//       lowestNode = node;
-//     }
-//   });
-
-//   return lowestNode!;
-// };
-
 const getNeighbors = (graph: Node[], position: Position) => {
   const node = graph.find(
     (n) => n.position.x === position.x && n.position.y === position.y
