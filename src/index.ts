@@ -33,7 +33,26 @@ const runApp = async () => {
 
   const game = await getGame();
 
+  if (
+    !(typeof game === 'object') ||
+    !('gameState' in game) ||
+    !('entityId' in game)
+  ) {
+    console.error('Error getting game: ', game);
+    return;
+  }
+
   const gameState = JSON.parse(game.gameState);
+
+  if (
+    !(typeof gameState === 'object') ||
+    !('maze' in gameState) ||
+    !('start' in gameState) ||
+    !('target' in gameState)
+  ) {
+    console.error('Error getting game state: ', gameState);
+    return;
+  }
 
   console.log('Maze:');
   prettyPrintMaze(gameState.maze);
