@@ -22,9 +22,13 @@ const getGame = async () => {
     { method: 'POST', headers }
   );
 
-  const game = await response.json();
-
-  return game;
+  try {
+    const game = await response.json();
+    return game;
+  } catch (e) {
+    console.error('Error parsing response: ', e);
+    return;
+  }
 };
 
 const runApp = async () => {
@@ -38,7 +42,7 @@ const runApp = async () => {
     !('gameState' in game) ||
     !('entityId' in game)
   ) {
-    console.error('Error getting game: ', game);
+    console.error('Invalid game: ', game);
     return;
   }
 
@@ -50,7 +54,7 @@ const runApp = async () => {
     !('start' in gameState) ||
     !('target' in gameState)
   ) {
-    console.error('Error getting game state: ', gameState);
+    console.error('Invalid gamestate: ', gameState);
     return;
   }
 
